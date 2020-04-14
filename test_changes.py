@@ -1,6 +1,6 @@
 # coding=utf-8
 import tensorflow as tf
-from modeling import embedding_lookup_factorized,transformer_model
+from modeling import embedding_lookup_factorized, transformer_model
 import os
 
 """
@@ -12,6 +12,7 @@ sequence_length = 512
 vocab_size = 30000
 hidden_size = 1024
 num_attention_heads = int(hidden_size / 64)
+
 
 def get_total_parameters():
     """
@@ -32,34 +33,41 @@ def get_total_parameters():
         total_parameters += variable_parameters
     return total_parameters
 
+
 def test_factorized_embedding():
     """
     test of Factorized embedding parameterization
     :return:
     """
-    input_ids=tf.zeros((batch_size, sequence_length),dtype=tf.int32)
-    output, embedding_table, embedding_table_2=embedding_lookup_factorized(input_ids,vocab_size,hidden_size)
-    print("output:",output)
+    input_ids = tf.zeros((batch_size, sequence_length), dtype=tf.int32)
+    output, embedding_table, embedding_table_2 = embedding_lookup_factorized(input_ids, vocab_size, hidden_size)
+    print("output:", output)
+
 
 def test_share_parameters():
     """
     test of share parameters across all layers: how many parameter after share parameter across layers of transformer.
     :return:
     """
+
     def total_parameters_transformer(share_parameter_across_layers):
-        input_tensor=tf.zeros((batch_size, sequence_length, hidden_size),dtype=tf.float32)
-        print("transformer_model. input:",input_tensor)
-        transformer_result=transformer_model(input_tensor,hidden_size=hidden_size,num_attention_heads=num_attention_heads,share_parameter_across_layers=share_parameter_across_layers)
-        print("transformer_result:",transformer_result)
-        total_parameters=get_total_parameters()
-        print('total_parameters(not share):',total_parameters)
+        input_tensor = tf.zeros((batch_size, sequence_length, hidden_size), dtype=tf.float32)
+        print("transformer_model. input:", input_tensor)
+        transformer_result = transformer_model(input_tensor, hidden_size=hidden_size,
+                                               num_attention_heads=num_attention_heads,
+                                               share_parameter_across_layers=share_parameter_across_layers)
+        print("transformer_result:", transformer_result)
+        total_parameters = get_total_parameters()
+        print('total_parameters(not share):', total_parameters)
 
-    share_parameter_across_layers=False
-    total_parameters_transformer(share_parameter_across_layers) # total parameters, not share: 125,976,576 = 125 million
+    share_parameter_across_layers = False
+    total_parameters_transformer(
+        share_parameter_across_layers)  # total parameters, not share: 125,976,576 = 125 million
 
-    tf.reset_default_graph() # Clears the default graph stack and resets the global default graph
-    share_parameter_across_layers=True
-    total_parameters_transformer(share_parameter_across_layers) #  total parameters,   share: 10,498,048 = 10.5 million
+    tf.reset_default_graph()  # Clears the default graph stack and resets the global default graph
+    share_parameter_across_layers = True
+    total_parameters_transformer(share_parameter_across_layers)  # total parameters,   share: 10,498,048 = 10.5 million
+
 
 def test_sentence_order_prediction():
     """
@@ -76,12 +84,11 @@ def test_sentence_order_prediction():
 
 
 # 1.test of Factorized embedding parameterization
-#test_factorized_embedding()
+# test_factorized_embedding()
 
 # 2. test of share parameters across all layers: how many parameter after share parameter across layers of transformer.
 # before share parameter: 125,976,576; after share parameter:
-#test_share_parameters()
+# test_share_parameters()
 
 # 3. test of sentence order prediction(SOP)
 test_sentence_order_prediction()
-

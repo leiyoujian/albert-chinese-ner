@@ -160,7 +160,7 @@ def pr_re_fbeta(cm, pos_indices, beta=1):
 
     pr = safe_div(diag_sum, tot_pred)
     re = safe_div(diag_sum, tot_gold)
-    fbeta = safe_div((1. + beta**2) * pr * re, beta**2 * pr + re)
+    fbeta = safe_div((1. + beta ** 2) * pr * re, beta ** 2 * pr + re)
 
     return pr, re, fbeta
 
