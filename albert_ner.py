@@ -79,6 +79,8 @@ flags.DEFINE_bool(
     "do_predict", False,
     "Whether to run the model in inference mode on the test set.")
 
+flags.DEFINE_bool("do_export", False, "Whether to export model to pb format.")
+
 flags.DEFINE_integer("train_batch_size", 32, "Total batch size for training.")
 
 flags.DEFINE_integer("eval_batch_size", 8, "Total batch size for eval.")
@@ -631,6 +633,22 @@ def convert_examples_to_features(examples, label_list, max_seq_length,
     return features
 
 
+def serving_input_fn_builder(seq_length):
+    
+    def input_fn():
+        """
+        Serving input function for CIFAR-10. Specifies the input format the caller of predict() will have to provide.
+        For more information: https://www.tensorflow.org/guide/saved_model#build_and_load_a_savedmodel
+        """
+        inputs = {"input_ids": tf.placeholder(tf.int64, [None, seq_length]),
+                 "input_mask": tf.placeholder(tf.int64, [None, seq_length]),
+                 "segment_ids": tf.placeholder(tf.int64, [None, seq_length]),
+                 "label_ids": tf.placeholder(tf.int64, [None])}
+        return tf.estimator.export.ServingInputReceiver(inputs, inputs)
+    
+    return input_fn
+
+
 def main(_):
     tf.logging.set_verbosity(tf.logging.INFO)
 
@@ -642,9 +660,9 @@ def main(_):
     tokenization.validate_case_matches_checkpoint(FLAGS.do_lower_case,
                                                   FLAGS.init_checkpoint)
 
-    if not FLAGS.do_train and not FLAGS.do_eval and not FLAGS.do_predict:
+    if not FLAGS.do_train and not FLAGS.do_eval and not FLAGS.do_predict and not FLAGS.do_export:
         raise ValueError(
-            "At least one of `do_train`, `do_eval` or `do_predict' must be True.")
+            "At least one of `do_train`, `do_eval`, `do_predict` or `do_export' must be True.")
 
     bert_config = modeling.BertConfig.from_json_file(FLAGS.bert_config_file)
 
@@ -841,6 +859,11 @@ def main(_):
                 output_line = "\n".join(id2label[id] for id in prediction if id != 0) + "\n"
                 writer.write(output_line)
 
+    if FLAGS.do_export:
+        serving_input_fn = serving_input_fn_builder(seq_length=FLAGS.max_seq_length)
+        exporter = tf.estimator.FinalExporter('Servo', serving_input_receiver_fn=serving_input_fn)
+        exporter.export(estimator, os.path.join(FLAGS.output_dir, 'export/Servo'), os.path.join(FLAGS.output_dir, 'model.ckpt-0'), None, True)
+                
 
 if __name__ == "__main__":
     flags.mark_flag_as_required("data_dir")

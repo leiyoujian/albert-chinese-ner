@@ -14,6 +14,8 @@
 # For more information on creating a Dockerfile
 # https://docs.docker.com/compose/gettingstarted/#step-2-create-a-dockerfile
 FROM tensorflow/tensorflow:1.15.2-gpu-py3
+#FROM 727897471807.dkr.ecr.cn-northwest-1.amazonaws.com.cn/tensorflow-training
+#FROM 343958593302.dkr.ecr.cn-northwest-1.amazonaws.com.cn/sagemaker-tf-albert-chinese-ner:latest
 
 RUN apt-get update && apt-get install -y --no-install-recommends nginx curl
 
