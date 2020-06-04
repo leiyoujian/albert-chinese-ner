@@ -31,7 +31,8 @@ with open(os.path.join('albert_base_ner_checkpoints', 'label2id.pkl'), 'rb') as 
 print(label2id)
 print(id2label)
 
-text = '因有关日寇在京掠夺文物详情，藏界较为重视，也是我们收藏北京史料中的要件之一。'
+# text = '因有关日寇在京掠夺文物详情，藏界较为重视，也是我们收藏北京史料中的要件之一。'
+text = '美国的华莱士，我和他谈笑风生。'
 tokens = ['[CLS]']
 tokens.extend(seg_char(text)[:max_seq_length-2])
 tokens.append('[SEP]')
@@ -51,31 +52,11 @@ print(input_ids)
 print(input_mask)
 
 
-# pip install --upgrade tensorflow-serving-client==0.0.8
-
-import sys
-from tensorflow_serving_client.protos import predict_pb2, prediction_service_pb2
-from grpc.beta import implementations
-import tensorflow as tf
-from tensorflow.python.framework import dtypes
+import requests
 import time
 
-if __name__ == '__main__':
-    start_time = time.time()
-    channel = implementations.insecure_channel("localhost", 8501)
-    stub = prediction_service_pb2.beta_create_PredictionService_stub(channel)
-    request = predict_pb2.PredictRequest()
-    request.model_spec.name = "albert_chinese_ner_model"
-    request.inputs["input_ids"].ParseFromString(tf.contrib.util.make_tensor_proto(input_ids, dtype=dtypes.int32, shape=[1, max_seq_length]).SerializeToString())
-    request.inputs["input_mask"].ParseFromString(tf.contrib.util.make_tensor_proto(input_mask, dtype=dtypes.int32, shape=[1, max_seq_length]).SerializeToString())
-    request.inputs["segment_ids"].ParseFromString(tf.contrib.util.make_tensor_proto(segment_ids, dtype=dtypes.int32, shape=[1, max_seq_length]).SerializeToString())
-    request.inputs["label_ids"].ParseFromString(tf.contrib.util.make_tensor_proto(label_ids, dtype=dtypes.int32, shape=[1, max_seq_length]).SerializeToString())
-    response = stub.Predict(request, 10.0)  # TODO: BUG grpc.framework.interfaces.face.face.AbortionError: AbortionError(code=StatusCode.UNAVAILABLE, details="Trying to connect an http1.x server")
-    results = {}
-    for key in response.outputs:
-        tensor_proto = response.outputs[key]
-        nd_array = tf.contrib.util.make_ndarray(tensor_proto)
-        results[key] = nd_array
-    print("cost %ss to predict: " % (time.time() - start_time))
-    print(results["pro"])
-    print(results["classify"])
+start = time.time()
+resp = requests.post('http://localhost:8501/v1/models/albert_chinese_ner_model:predict', json={"inputs": {"input_ids": input_ids}})
+end = time.time()
+pro = resp.json()['outputs'][0]
+print(f"pro:{pro}, time consuming:{int((end - start) * 1000)}ms")
