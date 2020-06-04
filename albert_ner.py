@@ -343,7 +343,7 @@ def file_based_convert_examples_to_features(
     label_map = {}
     for (i, label) in enumerate(label_list, 1):
         label_map[label] = i
-    with open('albert_base_ner_checkpoints/label2id.pkl', 'wb') as w:
+    with open(os.path.join(FLAGS.output_dir, 'label2id.pkl'), 'wb') as w:
         pickle.dump(label_map, w)
 
     writer = tf.python_io.TFRecordWriter(output_file)
@@ -826,7 +826,7 @@ def main(_):
 
     if FLAGS.do_predict:
         token_path = os.path.join(FLAGS.output_dir, "token_test.txt")
-        with open('albert_base_ner_checkpoints/label2id.pkl', 'rb') as rf:
+        with open(os.path.join(FLAGS.output_dir, 'label2id.pkl'), 'rb') as rf:
             label2id = pickle.load(rf)
             id2label = {value: key for key, value in label2id.items()}
         if os.path.exists(token_path):
