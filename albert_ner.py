@@ -643,7 +643,7 @@ def serving_input_fn_builder(seq_length):
         inputs = {"input_ids": tf.placeholder(tf.int64, [None, seq_length]),
                  "input_mask": tf.placeholder(tf.int64, [None, seq_length]),
                  "segment_ids": tf.placeholder(tf.int64, [None, seq_length]),
-                 "label_ids": tf.placeholder(tf.int64, [None])}
+                 "label_ids": tf.placeholder(tf.int64, [None, seq_length])}
         return tf.estimator.export.ServingInputReceiver(inputs, inputs)
     
     return input_fn
