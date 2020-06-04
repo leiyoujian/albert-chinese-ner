@@ -395,7 +395,7 @@ def file_based_input_fn_builder(input_file, seq_length, is_training,
             if t.dtype == tf.int64:
                 t = tf.to_int32(t)
             example[name] = t
-
+            
         return example
 
     def input_fn(params):
@@ -414,7 +414,7 @@ def file_based_input_fn_builder(input_file, seq_length, is_training,
                 lambda record: _decode_record(record, name_to_features),
                 batch_size=batch_size,
                 drop_remainder=drop_remainder))
-
+        
         return d
 
     return input_fn
@@ -640,10 +640,10 @@ def serving_input_fn_builder(seq_length):
         Serving input function for CIFAR-10. Specifies the input format the caller of predict() will have to provide.
         For more information: https://www.tensorflow.org/guide/saved_model#build_and_load_a_savedmodel
         """
-        inputs = {"input_ids": tf.placeholder(tf.int64, [None, seq_length]),
-                 "input_mask": tf.placeholder(tf.int64, [None, seq_length]),
-                 "segment_ids": tf.placeholder(tf.int64, [None, seq_length]),
-                 "label_ids": tf.placeholder(tf.int64, [None, seq_length])}
+        inputs = {"input_ids": tf.placeholder(tf.int32, [1, seq_length]),
+                 "input_mask": tf.placeholder(tf.int32, [1, seq_length]),
+                 "segment_ids": tf.placeholder(tf.int32, [1, seq_length]),
+                 "label_ids": tf.placeholder(tf.int32, [1, seq_length])}
         return tf.estimator.export.ServingInputReceiver(inputs, inputs)
     
     return input_fn
