@@ -896,8 +896,9 @@ def main(_):
 
     if FLAGS.do_export:
         serving_input_fn = serving_input_fn_builder(seq_length=FLAGS.max_seq_length)
-        exporter = tf.estimator.FinalExporter('Servo', serving_input_receiver_fn=serving_input_fn)
-        exporter.export(estimator, os.path.join(FLAGS.output_dir, 'export/Servo'), os.path.join(FLAGS.output_dir, 'model.ckpt-0'), None, True)
+        # exporter = tf.estimator.FinalExporter('Servo', serving_input_receiver_fn=serving_input_fn)
+        # exporter.export(estimator, os.path.join(FLAGS.output_dir, 'export/Servo'), os.path.join(FLAGS.output_dir, 'model.ckpt-0'), None, True)  # BUG 0 is not right! We should use latest, e.g. 791
+        estimator.export_savedmodel(os.path.join(FLAGS.output_dir, 'export/Servo'), serving_input_fn, strip_default_attrs=True)
                 
 
 if __name__ == "__main__":

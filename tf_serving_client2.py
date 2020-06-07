@@ -475,5 +475,6 @@ if __name__ == '__main__':
     labels = project_path + '{}albert_base_ner_checkpoints{}label2id.pkl'.format(os.sep, os.sep)
     nerinfer = NerInfer(vocab_file, labels, url='localhost:8500', model_name='albert_chinese_ner_model', signature_name='serving_default')
 
-    sentence = '因有关日寇在京掠夺文物详情，藏界较为重视，也是我们收藏北京史料中的要件之一。'
+    # sentence = '因有关日寇在京掠夺文物详情，藏界较为重视，也是我们收藏北京史料中的要件之一。'
+    sentence = '美国的华莱士，我和他谈笑风生。'
     print(nerinfer.infer([sentence], 128))
