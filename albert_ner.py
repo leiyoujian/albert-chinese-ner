@@ -633,56 +633,23 @@ def convert_examples_to_features(examples, label_list, max_seq_length,
     return features
 
 
-# def serving_input_fn_builder(seq_length):
-    
-#     def input_fn():
-#         """
-#         Serving input function for CIFAR-10. Specifies the input format the caller of predict() will have to provide.
-#         For more information: https://www.tensorflow.org/guide/saved_model#build_and_load_a_savedmodel
-#         """
-#         inputs = {"input_ids": tf.placeholder(tf.int32, [1, seq_length]),
-#                  "input_mask": tf.placeholder(tf.int32, [1, seq_length]),
-#                  "segment_ids": tf.placeholder(tf.int32, [1, seq_length]),
-#                  "label_ids": tf.placeholder(tf.int32, [1, seq_length])}
-#         return tf.estimator.export.ServingInputReceiver(inputs, inputs)
-    
-#     return input_fn
-
-
-# def serving_input_fn_builder(seq_length):
-
-#     def input_fn():
-#         """An input receiver that expects a serialized tf.Example."""
-#         reciever_tensors = {
-#             "input_ids": tf.placeholder(dtype=tf.int32, shape=[1, seq_length])
-#         }
-#         features = {
-#             "input_ids": reciever_tensors['input_ids'],
-#             "input_mask": 1 - tf.cast(tf.equal(reciever_tensors['input_ids'], 0), dtype=tf.int32),
-#             "segment_ids": tf.zeros(dtype=tf.int32, shape=[1, seq_length]),
-#             'label_ids': tf.zeros(dtype=tf.int32, shape=[1, seq_length])
-#         }
-#         return tf.estimator.export.ServingInputReceiver(features, reciever_tensors)
-
-#     return input_fn
-
-
 def serving_input_fn_builder(seq_length):
 
     def input_fn():
-        feature_spec = {
-            "input_ids": tf.FixedLenFeature([seq_length], tf.int64),
-            "input_mask": tf.FixedLenFeature([seq_length], tf.int64),
-            "segment_ids": tf.FixedLenFeature([seq_length], tf.int64),
-            "label_ids": tf.FixedLenFeature([seq_length], tf.int64),
+        """An input receiver that expects a serialized tf.Example."""
+        reciever_tensors = {
+            "input_ids": tf.placeholder(dtype=tf.int32, shape=[1, seq_length])
         }
-        serialized_tf_example = tf.placeholder(dtype=tf.string, shape=[None], name='input_example_tensor')
-        receiver_tensors = {'examples': serialized_tf_example}
-        features = tf.parse_example(serialized_tf_example, feature_spec)
-
-        return tf.estimator.export.ServingInputReceiver(features, receiver_tensors)
+        features = {
+            "input_ids": reciever_tensors['input_ids'],
+            "input_mask": 1 - tf.cast(tf.equal(reciever_tensors['input_ids'], 0), dtype=tf.int32),
+            "segment_ids": tf.zeros(dtype=tf.int32, shape=[1, seq_length]),
+            'label_ids': tf.zeros(dtype=tf.int32, shape=[1, seq_length])
+        }
+        return tf.estimator.export.ServingInputReceiver(features, reciever_tensors)
 
     return input_fn
+
 
 def main(_):
     tf.logging.set_verbosity(tf.logging.INFO)
@@ -896,8 +863,6 @@ def main(_):
 
     if FLAGS.do_export:
         serving_input_fn = serving_input_fn_builder(seq_length=FLAGS.max_seq_length)
-        # exporter = tf.estimator.FinalExporter('Servo', serving_input_receiver_fn=serving_input_fn)
-        # exporter.export(estimator, os.path.join(FLAGS.output_dir, 'export/Servo'), os.path.join(FLAGS.output_dir, 'model.ckpt-0'), None, True)  # BUG 0 is not right! We should use latest, e.g. 791
         estimator.export_savedmodel(os.path.join(FLAGS.output_dir, 'export/Servo'), serving_input_fn, strip_default_attrs=True)
                 
 
